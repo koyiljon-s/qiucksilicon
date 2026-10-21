@@ -1,5 +1,7 @@
 "use client";
 
+import { IconArrowUpRight } from '@tabler/icons-react';
+
 const navItems = [
   { label: "Technology", href: "#technology" },
   { label: "Solutions", href: "#Solutions" },
@@ -12,11 +14,11 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 bg-white backdrop-blur border-b border-[#d9d9d9]">
-      <nav className="mx-auto flex max-w-384 items-center justify-between">
+      <header className="fixed inset-x-0 top-0 z-50 bg-white backdrop-blur border-b border-[#d1d1d1]">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between border-r border-l border-[#d1d1d1]">
         <a
           href="#"
-          className="flex items-center gap-1 text-[32px] font-bold tracking-tight text-[#010e21] border-r border-[#d9d9d9] px-10 py-4"
+          className="flex items-center gap-1 text-[32px] font-bold tracking-tight text-[#010e21] px-8 py-4"
         >
           Quicksilicon
         </a>
@@ -34,12 +36,12 @@ export default function Navbar() {
           ))}
         </ul>
 
-        <div className="hidden items-center md:flex pr-10">
+        <div className="hidden items-center md:flex px-8">
           {rightItems.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="py-6 px-8  text-xl text-[#0a0a0a] bg-[#ff00ff] font-medium hover:bg-[#ecff6e]"
+              className="py-2 px-6 text-xl text-white rounded-xl bg-linear-to-b from-[#548dff] to-[#2664eb] font-medium border border-[#75a3ff] ring ring-[#1949c2]"
             >
               {item.label}
             </a>
