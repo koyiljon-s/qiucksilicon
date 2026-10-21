@@ -3,7 +3,7 @@
 const navItems = [
   { label: "Technology", href: "#technology" },
   { label: "Solutions", href: "#Solutions" },
-  { label: "Documentation", href: "#docs" },
+  { label: "Whitepaper", href: "#white-paper" },
 ];
 
 const rightItems = [{ label: "Get Started", href: "#start" }];
