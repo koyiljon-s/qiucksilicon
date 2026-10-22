@@ -14,7 +14,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 bg-white backdrop-blur border-b border-[#d1d1d1]">
+      <header className="sticky inset-x-0 top-0 z-50 bg-white backdrop-blur border-b border-[#d1d1d1]">
       <nav className="mx-auto flex max-w-7xl items-center justify-between border-r border-l border-[#d1d1d1]">
         <a
           href="#"

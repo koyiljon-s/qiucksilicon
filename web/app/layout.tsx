@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
+import HatchDivider from "@/components/hatch-divider";
+import Navbar from "@/components/navbar";
 import "./globals.css";
 
 const diamondGrotesk = localFont({
@@ -25,7 +27,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${diamondGrotesk.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Navbar />
+        <HatchDivider />
+        {children}
+      </body>
     </html>
   );
 }
