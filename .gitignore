@@ -1,4 +1,5 @@
-/target
+/targets
+/prover-api/target/
 .env
 .vscode
 
