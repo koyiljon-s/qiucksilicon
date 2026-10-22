@@ -11,6 +11,7 @@ The goal is to make advanced blockchain protocols (zk-rollups, verifiable comput
 Zero-knowledge proofs are one of the most important building blocks of modern blockchain technology, but proof generation is still computationally heavy. The bottlenecks in almost every proving system map extremely well to GPUs.
 
 Quicksilicon explores how far we can push proving performance in pure Rust by combining:
+
 - High-level zkVMs (like SP1)
 - Low-level cryptographic libraries (arkworks)
 - Production-grade GPU acceleration (ICICLE and others)
