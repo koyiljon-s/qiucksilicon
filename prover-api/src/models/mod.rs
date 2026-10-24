@@ -1,2 +1,2 @@
-pub mod user;
-pub use self::user::GithubUser;
+pub mod github_user;
+pub use self::github_user::GithubUser;
