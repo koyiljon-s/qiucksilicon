@@ -14,7 +14,7 @@ use oauth2::{
 use serde::Deserialize;
 use tokio::sync::Mutex;
 
-use crate::{config::Config, models::GithubUser};
+use crate::{config::Config, models::GithubUser, repositories::GithubUserRepository};
 
 const GITHUB_AUTHORIZE_URL: &str = "https://github.com/login/oauth/authorize";
 const GITHUB_TOKEN_URL: &str = "https://github.com/login/oauth/access_token";
@@ -26,13 +26,15 @@ type GithubClient =
 #[derive(Clone)]
 pub struct AuthState {
     pub config: Config,
+    pub db: Arc<tokio_postgres::Client>,
     pending_pkce: Arc<Mutex<HashMap<String, String>>>,
 }
 
 impl AuthState {
-    pub fn new(config: Config) -> Self {
+    pub fn new(config: Config, db: Arc<tokio_postgres::Client>) -> Self {
         Self {
             config,
+            db,
             pending_pkce: Arc::new(Mutex::new(HashMap::new())),
         }
     }
@@ -204,5 +206,10 @@ pub async fn github_callback(
         .await
         .map_err(|_| AuthError::upstream("invalid GitHub user response"))?;
 
-    Ok(Json(user))
+    let saved_user = GithubUserRepository::new(&state.db)
+        .upsert(&user)
+        .await
+        .map_err(|_| AuthError::internal("failed to save GitHub user"))?;
+
+    Ok(Json(saved_user))
 }

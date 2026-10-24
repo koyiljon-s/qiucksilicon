@@ -1,11 +1,12 @@
 use axum::{Json, Router, routing::get};
 use axum_prometheus::PrometheusMetricLayer;
 use serde::Serialize;
+use std::sync::Arc;
 
 use crate::{config::Config, handlers::auth::AuthState, routers::auth::auth_routes};
 
-pub fn create_router(config: Config) -> Router {
-    let auth_state = AuthState::new(config);
+pub fn create_router(config: Config, db: Arc<tokio_postgres::Client>) -> Router {
+    let auth_state = AuthState::new(config, db);
 
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 

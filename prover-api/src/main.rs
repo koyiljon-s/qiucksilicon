@@ -1,9 +1,11 @@
 use log::{error, info};
+use std::sync::Arc;
 
 mod config;
 mod db;
 mod handlers;
 mod models;
+mod repositories;
 mod routers;
 
 use config::Config;
@@ -22,17 +24,26 @@ async fn main() {
         std::process::exit(1);
     }
 
-    let _client = db::connect_and_check(&settings.database_url)
+    let client = db::connect_and_check(&settings.database_url)
         .await
         .unwrap_or_else(|error| {
             error!("database initialization failed: {error}");
+            std::process::exit(1);
+        });
+    let client = Arc::new(client);
+
+    repositories::GithubUserRepository::new(&client)
+        .create_table()
+        .await
+        .unwrap_or_else(|error| {
+            error!("failed to initialize GitHub users table: {error}");
             std::process::exit(1);
         });
 
     let server_port = settings.server_port;
     info!("Server port configured: {server_port}");
 
-    let app = routers::create_router(settings.clone());
+    let app = routers::create_router(settings.clone(), client);
 
     let addr = format!("127.0.0.1:{}", settings.server_port);
     info!("Server listening on http://{addr}");
