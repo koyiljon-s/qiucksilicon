@@ -4,6 +4,7 @@ use std::sync::Arc;
 mod config;
 mod db;
 mod handlers;
+mod middleware;
 mod models;
 mod repositories;
 mod routers;
@@ -38,6 +39,14 @@ async fn main() {
         .await
         .unwrap_or_else(|error| {
             error!("failed to initialize GitHub users table: {error}");
+            std::process::exit(1);
+        });
+
+    repositories::SessionRepository::new(&client)
+        .create_table()
+        .await
+        .unwrap_or_else(|error| {
+            error!("failed to initialize sessions table: {error}");
             std::process::exit(1);
         });
 

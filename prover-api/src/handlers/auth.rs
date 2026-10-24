@@ -4,9 +4,13 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Redirect, Response},
 };
+use axum_extra::extract::{
+    CookieJar,
+    cookie::{Cookie, SameSite},
+};
 use serde::Deserialize;
 
-use crate::services::{AuthService, AuthServiceError};
+use crate::services::{AuthService, AuthServiceError, session::SESSION_COOKIE_NAME};
 
 #[derive(Debug, Deserialize)]
 pub struct GithubCallbackQuery {
@@ -24,6 +28,8 @@ pub struct AuthError {
 
 impl AuthError {
     fn from_service(error: AuthServiceError) -> Self {
+        log::error!("GitHub authentication service error: {error:?}");
+
         let (status, message) = match error {
             AuthServiceError::AuthorizationFailed(message) => (StatusCode::BAD_REQUEST, message),
             AuthServiceError::MissingCode => (
@@ -48,9 +54,13 @@ impl AuthError {
             | AuthServiceError::InvalidGithubUser => {
                 (StatusCode::BAD_GATEWAY, "GitHub request failed".to_owned())
             }
-            AuthServiceError::Persistence => (
+            AuthServiceError::Persistence(_) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "failed to save GitHub user".to_owned(),
+            ),
+            AuthServiceError::Session(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "session operation failed".to_owned(),
             ),
         };
 
@@ -87,7 +97,7 @@ pub async fn github_login(State(service): State<AuthService>) -> Result<Redirect
 pub async fn github_callback(
     State(service): State<AuthService>,
     Query(query): Query<GithubCallbackQuery>,
-) -> Result<Json<crate::models::GithubUser>, AuthError> {
+) -> Result<(CookieJar, Redirect), AuthError> {
     let user = service
         .complete_callback(
             query.code,
@@ -98,5 +108,33 @@ pub async fn github_callback(
         .await
         .map_err(AuthError::from_service)?;
 
-    Ok(Json(user))
+    let session_token = service
+        .create_session(user.id)
+        .await
+        .map_err(AuthError::from_service)?;
+
+    let cookie = Cookie::build((SESSION_COOKIE_NAME, session_token))
+        .http_only(true)
+        .secure(service.secure_cookie())
+        .same_site(SameSite::Lax)
+        .path("/")
+        .build();
+
+    Ok((CookieJar::new().add(cookie), Redirect::temporary("/")))
+}
+
+pub async fn logout(
+    State(service): State<AuthService>,
+    jar: CookieJar,
+) -> Result<(CookieJar, Redirect), AuthError> {
+    if let Some(cookie) = jar.get(SESSION_COOKIE_NAME) {
+        service
+            .revoke_session(cookie.value())
+            .await
+            .map_err(AuthError::from_service)?;
+    }
+
+    let removal_cookie = Cookie::build((SESSION_COOKIE_NAME, "")).path("/").build();
+
+    Ok((jar.remove(removal_cookie), Redirect::temporary("/")))
 }

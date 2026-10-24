@@ -9,6 +9,8 @@ pub struct Config {
     pub github_client_id: String,
     pub github_client_secret: String,
     pub github_redirect_uri: String,
+    #[serde(default)]
+    pub cookie_secure: bool,
 }
 
 impl Config {
@@ -17,6 +19,7 @@ impl Config {
 
         ::config::Config::builder()
             .set_default("port", 8000)?
+            .set_default("cookie_secure", false)?
             .add_source(::config::Environment::default().try_parsing(true))
             .build()?
             .try_deserialize()

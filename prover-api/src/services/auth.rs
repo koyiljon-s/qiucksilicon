@@ -7,7 +7,12 @@ use oauth2::{
 };
 use tokio::sync::Mutex;
 
-use crate::{config::Config, models::GithubUser, repositories::GithubUserRepository};
+use crate::{
+    config::Config,
+    models::GithubUser,
+    repositories::GithubUserRepository,
+    services::session::{SessionService, SessionServiceError},
+};
 
 const GITHUB_AUTHORIZE_URL: &str = "https://github.com/login/oauth/authorize";
 const GITHUB_TOKEN_URL: &str = "https://github.com/login/oauth/access_token";
@@ -20,14 +25,17 @@ type GithubClient =
 pub struct AuthService {
     config: Config,
     db: Arc<tokio_postgres::Client>,
+    sessions: SessionService,
     pending_pkce: Arc<Mutex<HashMap<String, String>>>,
 }
 
 impl AuthService {
     pub fn new(config: Config, db: Arc<tokio_postgres::Client>) -> Self {
+        let sessions = SessionService::new(db.clone(), config.cookie_secure);
         Self {
             config,
             db,
+            sessions,
             pending_pkce: Arc::new(Mutex::new(HashMap::new())),
         }
     }
@@ -49,6 +57,31 @@ impl AuthService {
         );
 
         Ok(authorization_url.to_string())
+    }
+
+    pub async fn create_session(&self, github_id: u64) -> Result<String, AuthServiceError> {
+        self.sessions
+            .create(github_id)
+            .await
+            .map_err(AuthServiceError::Session)
+    }
+
+    pub async fn authenticate_session(&self, token: &str) -> Result<Option<u64>, AuthServiceError> {
+        self.sessions
+            .authenticate(token)
+            .await
+            .map_err(AuthServiceError::Session)
+    }
+
+    pub async fn revoke_session(&self, token: &str) -> Result<(), AuthServiceError> {
+        self.sessions
+            .revoke(token)
+            .await
+            .map_err(AuthServiceError::Session)
+    }
+
+    pub fn secure_cookie(&self) -> bool {
+        self.sessions.secure_cookie()
     }
 
     pub async fn complete_callback(
@@ -110,7 +143,7 @@ impl AuthService {
         GithubUserRepository::new(&self.db)
             .upsert(&user)
             .await
-            .map_err(|_| AuthServiceError::Persistence)
+            .map_err(|error| AuthServiceError::Persistence(error.to_string()))
     }
 
     fn github_client(&self) -> Result<GithubClient, AuthServiceError> {
@@ -152,5 +185,6 @@ pub enum AuthServiceError {
     TokenExchange,
     GithubRequest,
     InvalidGithubUser,
-    Persistence,
+    Persistence(String),
+    Session(SessionServiceError),
 }

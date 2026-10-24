@@ -21,3 +21,5 @@ oauth2 = "5.0.0"
 reqwest = { version = "0.12", features = ["json"] }
 axum-extra = { version = "0.12.6", features = ["cookie"] }
 cookie = "0.18"
+sha2 = "0.10"
+uuid = { version = "1", features = ["v4"] }

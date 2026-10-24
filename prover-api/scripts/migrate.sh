@@ -39,8 +39,20 @@ CREATE TABLE IF NOT EXISTS github_users (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS sessions (
+    token_hash TEXT PRIMARY KEY,
+    github_id BIGINT NOT NULL REFERENCES github_users(github_id),
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    revoked_at TIMESTAMPTZ
+);
+
 INSERT INTO schema_migrations (version)
 VALUES ('001_create_github_users')
+ON CONFLICT (version) DO NOTHING;
+
+INSERT INTO schema_migrations (version)
+VALUES ('002_create_sessions')
 ON CONFLICT (version) DO NOTHING;
 
 COMMIT;
