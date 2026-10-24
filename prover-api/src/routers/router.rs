@@ -1,22 +1,25 @@
-use axum::{
-    routing::get,
-    Router,
-    Json,
-};
+use axum::{Json, Router, routing::get};
 use axum_prometheus::PrometheusMetricLayer;
 use serde::Serialize;
 
-pub fn create_router() -> Router {
+use crate::{config::Config, handlers::auth::AuthState, routers::auth::auth_routes};
+
+pub fn create_router(config: Config) -> Router {
+    let auth_state = AuthState::new(config);
 
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 
     Router::new()
         .route("/", get(welcome_handler))
         .route("/health", get(health_handler))
-        .route("/metrics", get(move || async move { metric_handle.render() }))
+        .route(
+            "/metrics",
+            get(move || async move { metric_handle.render() }),
+        )
+        .merge(auth_routes())
         .layer(prometheus_layer)
+        .with_state(auth_state)
 }
-
 
 #[derive(Serialize)]
 struct WelcomeResponse {

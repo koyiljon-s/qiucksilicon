@@ -4,7 +4,7 @@ use tokio_postgres::Client;
 
 pub async fn connect_and_check(database_url: &str) -> Result<Client, Box<dyn std::error::Error>> {
     info!("Connecting to database...");
-    
+
     let (client, connection) = tokio_postgres::connect(database_url, tokio_postgres::NoTls).await?;
 
     tokio::spawn(async move {

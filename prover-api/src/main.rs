@@ -2,6 +2,8 @@ use log::{error, info};
 
 mod config;
 mod db;
+mod handlers;
+mod models;
 mod routers;
 
 use config::Config;
@@ -20,7 +22,6 @@ async fn main() {
         std::process::exit(1);
     }
 
-
     let _client = db::connect_and_check(&settings.database_url)
         .await
         .unwrap_or_else(|error| {
@@ -31,15 +32,17 @@ async fn main() {
     let server_port = settings.server_port;
     info!("Server port configured: {server_port}");
 
-    let app = routers::create_router();
+    let app = routers::create_router(settings.clone());
 
     let addr = format!("127.0.0.1:{}", settings.server_port);
     info!("Server listening on http://{addr}");
 
-    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap_or_else(|error| {
-        error!("failed to bind to address {addr}: {error}");
-        std::process::exit(1);
-    });
+    let listener = tokio::net::TcpListener::bind(&addr)
+        .await
+        .unwrap_or_else(|error| {
+            error!("failed to bind to address {addr}: {error}");
+            std::process::exit(1);
+        });
 
     axum::serve(listener, app).await.unwrap_or_else(|error| {
         error!("server error: {error}");
