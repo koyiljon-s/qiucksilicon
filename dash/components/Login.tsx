@@ -21,7 +21,7 @@ export default function Login() {
           <IconCloudComputing stroke={1.5} className="h-16 w-16 text-[#5e29f0]" />
         </div>
         <div className="text-center mt-6">
-          <h1 className="text-3xl text-black font-semibold tracking-tight">Quicksilicon</h1>
+          <h1 className="text-lg text-black font-semibold tracking-tight">Sign in to Quicksilicon</h1>
           <p className="mt-3 text-sm leading-6 text-[#404040]">
             Welcome back! Please sign in to continue
           </p>
@@ -29,7 +29,7 @@ export default function Login() {
 
         <div className="mt-8 space-y-6">
           <button
-            className="flex h-12 w-full items-center justify-center gap-3 rounded-sm text-black border border-[#ededf0] bg-[#fafafa] text-sm font-medium transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40"
+            className="flex h-12 w-full items-center justify-center gap-3 rounded-sm text-black border border-[#ededf0] bg-[#e8ebed] text-[16px] font-medium transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40"
             type="button"
           >
             <GithubIcon />
