@@ -3,10 +3,10 @@ use axum_prometheus::PrometheusMetricLayer;
 use serde::Serialize;
 use std::sync::Arc;
 
-use crate::{config::Config, handlers::auth::AuthState, routers::auth::auth_routes};
+use crate::{config::Config, routers::auth::auth_routes, services::AuthService};
 
 pub fn create_router(config: Config, db: Arc<tokio_postgres::Client>) -> Router {
-    let auth_state = AuthState::new(config, db);
+    let auth_state = AuthService::new(config, db);
 
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 

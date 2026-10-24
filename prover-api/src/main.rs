@@ -7,6 +7,7 @@ mod handlers;
 mod models;
 mod repositories;
 mod routers;
+mod services;
 
 use config::Config;
 
