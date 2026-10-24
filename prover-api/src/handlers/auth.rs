@@ -10,7 +10,10 @@ use axum_extra::extract::{
 };
 use serde::Deserialize;
 
-use crate::services::{AuthService, AuthServiceError, session::SESSION_COOKIE_NAME};
+use crate::services::{
+    AuthService, AuthServiceError,
+    session::{SESSION_COOKIE_NAME, SessionServiceError},
+};
 
 #[derive(Debug, Deserialize)]
 pub struct GithubCallbackQuery {
@@ -54,14 +57,27 @@ impl AuthError {
             | AuthServiceError::InvalidGithubUser => {
                 (StatusCode::BAD_GATEWAY, "GitHub request failed".to_owned())
             }
-            AuthServiceError::Persistence(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "failed to save GitHub user".to_owned(),
-            ),
-            AuthServiceError::Session(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "session operation failed".to_owned(),
-            ),
+            AuthServiceError::Persistence(message) => {
+                log::error!("GitHub user persistence error: {message}");
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "failed to save GitHub user".to_owned(),
+                )
+            }
+            AuthServiceError::Session(error) => {
+                match error {
+                    SessionServiceError::Database(message) => {
+                        log::error!("Session database error: {message}");
+                    }
+                    SessionServiceError::InvalidUserId => {
+                        log::error!("Session user ID could not be represented");
+                    }
+                }
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "session operation failed".to_owned(),
+                )
+            }
         };
 
         Self { status, message }

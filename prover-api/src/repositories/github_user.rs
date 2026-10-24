@@ -26,12 +26,6 @@ const UPSERT_SQL: &str = r#"
     RETURNING github_id, login, email, avatar_url
 "#;
 
-const FIND_BY_ID_SQL: &str = r#"
-    SELECT github_id, login, email, avatar_url
-    FROM github_users
-    WHERE github_id = $1
-"#;
-
 pub struct GithubUserRepository<'a> {
     client: &'a Client,
 }
@@ -60,16 +54,6 @@ impl<'a> GithubUserRepository<'a> {
             .await?;
 
         row_to_user(&row)
-    }
-
-    pub async fn find_by_github_id(
-        &self,
-        github_id: u64,
-    ) -> Result<Option<GithubUser>, Box<dyn std::error::Error + Send + Sync>> {
-        let github_id = i64::try_from(github_id)?;
-        let row = self.client.query_opt(FIND_BY_ID_SQL, &[&github_id]).await?;
-
-        row.map(|row| row_to_user(&row)).transpose()
     }
 }
 

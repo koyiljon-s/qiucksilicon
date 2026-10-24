@@ -66,6 +66,7 @@ impl AuthService {
             .map_err(AuthServiceError::Session)
     }
 
+    #[allow(dead_code)]
     pub async fn authenticate_session(&self, token: &str) -> Result<Option<u64>, AuthServiceError> {
         self.sessions
             .authenticate(token)

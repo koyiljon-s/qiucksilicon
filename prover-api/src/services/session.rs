@@ -36,6 +36,7 @@ impl SessionService {
         Ok(token)
     }
 
+    #[allow(dead_code)]
     pub async fn authenticate(&self, token: &str) -> Result<Option<u64>, SessionServiceError> {
         let github_id = SessionRepository::new(&self.db)
             .find_github_id(&hash_token(token))

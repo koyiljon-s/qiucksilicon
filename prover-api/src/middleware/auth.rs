@@ -8,6 +8,7 @@ use axum_extra::extract::CookieJar;
 
 use crate::{services::AuthService, services::session::SESSION_COOKIE_NAME};
 
+#[allow(dead_code)]
 pub async fn require_auth(
     State(service): State<AuthService>,
     jar: CookieJar,
