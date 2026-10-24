@@ -2,7 +2,7 @@ use log::{error, info};
 
 mod config;
 mod db;
-mod router;
+mod routers;
 
 use config::Config;
 
@@ -31,7 +31,7 @@ async fn main() {
     let server_port = settings.server_port;
     info!("Server port configured: {server_port}");
 
-    let app = router::create_router();
+    let app = routers::create_router();
 
     let addr = format!("127.0.0.1:{}", settings.server_port);
     info!("Server listening on http://{addr}");
